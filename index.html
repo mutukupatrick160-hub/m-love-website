@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For M ❤️</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #FFF6F2;
+    --plum: #3B1F2B;
+    --rose: #D46A8C;
+    --rose-deep: #C2477A;
+    --gold: #F2B84B;
+    --pink-soft: #F7D6DE;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--cream);
+    font-family: 'Quicksand', sans-serif;
+    color: var(--plum);
+  }
+
+  body{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* floating hearts background */
+  .heart-field{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .heart{
+    position: absolute;
+    bottom: -10%;
+    font-size: 22px;
+    opacity: 0.35;
+    color: var(--rose);
+    animation: drift linear infinite;
+    user-select: none;
+  }
+
+  @keyframes drift{
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.4; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-115vh) translateX(var(--drift, 20px)) rotate(20deg); opacity: 0; }
+  }
+
+  .stage{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px 26px;
+    text-align: center;
+  }
+
+  .screen{
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    animation: rise 0.5s ease;
+  }
+  .screen.active{ display: flex; }
+
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(14px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* progress dots for the question sequence */
+  .progress{
+    display: flex;
+    gap: 7px;
+    margin-bottom: 22px;
+  }
+  .dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--pink-soft);
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .dot.done{ background: var(--rose); }
+  .dot.now{ background: var(--rose-deep); transform: scale(1.3); }
+
+  /* ---- Screen 1: envelope ---- */
+  .envelope{
+    font-size: 64px;
+    margin-bottom: 18px;
+    cursor: pointer;
+    animation: bob 2.6s ease-in-out infinite;
+    filter: drop-shadow(0 8px 14px rgba(194,71,122,0.25));
+  }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-8px); }
+  }
+
+  .eyebrow{
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--rose-deep);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .display{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0 0 14px;
+  }
+  .display.xl{ font-size: 42px; }
+  .display.lg{ font-size: 32px; }
+
+  .sub{
+    font-size: 16px;
+    line-height: 1.5;
+    color: #6b4b56;
+    margin: 0 0 28px;
+    max-width: 340px;
+  }
+
+  .tap-hint{
+    font-size: 13px;
+    color: var(--rose);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---- yes/no buttons ---- */
+  .btn-row{
+    position: relative;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    width: 100%;
+  }
+
+  .btn{
+    border: none;
+    border-radius: 999px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 15px 34px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .btn-yes{
+    background: linear-gradient(135deg, var(--rose-deep), var(--rose));
+    color: white;
+    box-shadow: 0 10px 24px rgba(194,71,122,0.35);
+  }
+  .btn-yes:hover{ transform: scale(1.05); }
+  .btn-yes:active{ transform: scale(0.97); }
+  .btn-yes:disabled{
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .btn-no{
+    background: var(--pink-soft);
+    color: var(--rose-deep);
+    position: relative;
+  }
+
+  .no-caption{
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12.5px;
+    color: #a15c74;
+    font-style: italic;
+    white-space: nowrap;
+    opacity: 0.9;
+  }
+
+  /* ---- free-text answer field ---- */
+  .answer-field{
+    width: 100%;
+    background: white;
+    border: 2px solid var(--pink-soft);
+    border-radius: 16px;
+    padding: 16px 18px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--plum);
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .answer-field::placeholder{
+    color: #c99cab;
+    font-weight: 500;
+  }
+  .answer-field:focus{
+    border-color: var(--rose-deep);
+    box-shadow: 0 0 0 4px rgba(194,71,122,0.12);
+  }
+
+  .next-btn{
+    margin-top: 22px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .next-btn.show{
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---- summary card ---- */
+  .detail-card{
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    padding: 22px 24px;
+    box-shadow: 0 14px 30px rgba(194,71,122,0.16);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+  }
+
+  .detail-row{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .detail-icon{
+    font-size: 22px;
+    width: 34px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .detail-text{ display: flex; flex-direction: column; }
+
+  .detail-label{
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rose);
+    font-weight: 700;
+  }
+
+  .detail-value{
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--plum);
+  }
+
+  .detail-divider{
+    height: 1px;
+    background: var(--pink-soft);
+    border: none;
+    margin: 0;
+  }
+
+  /* ---- celebration ---- */
+  .big-heart{
+    font-size: 58px;
+    margin-bottom: 12px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.14); }
+  }
+
+  .confetti{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .confetti span{
+    position: absolute;
+    top: -8%;
+    font-size: 20px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(112vh) rotate(360deg); opacity: 0.9; }
+  }
+
+  .signature{
+    margin-top: 26px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--rose-deep);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .heart, .envelope, .big-heart, .confetti span{ animation: none !important; }
+  }
+
+  @media (max-width: 380px){
+    .display.xl{ font-size: 34px; }
+    .display.lg{ font-size: 26px; }
+  }
+
+  .final-note{
+    width:100%;
+    background:white;
+    border:1px solid var(--pink-soft);
+    border-radius:18px;
+    padding:18px 20px;
+    margin:4px 0 8px;
+    text-align:left;
+    box-shadow:0 10px 24px rgba(194,71,122,.12);
+    animation: rise 0.7s ease;
+  }
+  .final-note .note-title{
+    color:var(--rose-deep);
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .final-note p{
+    margin:0;
+    color:#6b4b56;
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  .happy-note{
+    width:100%;
+    background:linear-gradient(135deg, #fff, #fff4f7);
+    border:1px solid var(--pink-soft);
+    border-radius:18px;
+    padding:16px 18px;
+    margin:2px 0 20px;
+    text-align:left;
+    box-shadow:0 10px 22px rgba(194,71,122,.10);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    animation: rise 0.7s ease;
+  }
+  .happy-note span{
+    font-size:24px;
+    line-height:1;
+    flex-shrink:0;
+  }
+  .happy-note p{
+    margin:0;
+    color:#6b4b56;
+    font-size:14px;
+    line-height:1.55;
+    font-weight:500;
+  }
+
+  .music-bar{
+    position:fixed;
+    top:16px;
+    right:16px;
+    z-index:5;
+  }
+  .music-btn{
+    border:1px solid var(--pink-soft);
+    background:rgba(255,255,255,.9);
+    color:var(--rose-deep);
+    border-radius:999px;
+    padding:10px 15px;
+    font-family:'Quicksand',sans-serif;
+    font-weight:700;
+    box-shadow:0 8px 20px rgba(194,71,122,.12);
+    cursor:pointer;
+  }
+  .music-btn i{
+    font-family:'Cormorant Garamond',serif;
+    font-size:16px;
+  }
+  .reason-card{
+    width:100%;
+    background:white;
+    border-radius:18px;
+    padding:15px 18px;
+    margin-bottom:10px;
+    text-align:left;
+    box-shadow:0 8px 20px rgba(194,71,122,.10);
+  }
+  .reason-card span{
+    font-size:25px;
+    float:left;
+    margin-right:12px;
+  }
+  .reason-card b{font-size:16px;}
+  .reason-card p{
+    margin:4px 0 0 38px;
+    color:#6b4b56;
+    font-size:14px;
+    line-height:1.4;
+  }
+  @media (max-width:380px){
+    .music-bar{top:10px;right:10px;}
+    .music-btn{font-size:12px;padding:8px 11px;}
+  }
+
+
+
+</style>
+</head>
+<body>
+
+<div class="heart-field" id="heartField"></div>
+
+<div class="music-bar">
+  <button id="musicBtn" class="music-btn">🎵 Play <i>Malaika</i></button>
+  <audio id="bgMusic" loop preload="auto">
+    <source src="malaika.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<div class="stage">
+
+  <!-- Screen 1: envelope -->
+  <div class="screen active" id="screen1">
+    <div class="eyebrow">a small delivery for</div>
+    <h1 class="display xl">my love</h1>
+    <div class="envelope" id="openEnvelope">💌</div>
+    <p class="sub">You've got one letter waiting. It's short, it's honest, and it has exactly one question in it.</p>
+    <p class="tap-hint">tap the envelope to open it</p>
+  </div>
+
+  <!-- Screen 1b: why you -->
+  <div class="screen" id="story1">
+    <div class="eyebrow">before the question</div>
+    <h2 class="display lg">A little something about you 💗</h2>
+    <p class="sub">There are a lot of things I could say, but these are the ones that keep coming back to me.</p>
+
+    <div class="reason-card">
+      <span>😊</span><b>Your smile</b>
+      <p>It has a way of making an ordinary moment feel special.</p>
+    </div>
+    <div class="reason-card">
+      <span>✨</span><b>Your energy</b>
+      <p>Being around you just feels different — in the best way.</p>
+    </div>
+    <div class="reason-card">
+      <span>❤️</span><b>Just you</b>
+      <p>Honestly, I could keep listing reasons, but you are the reason.</p>
+    </div>
+
+    <button class="btn btn-yes" id="toQuestion">There's one question →</button>
+  </div>
+
+  <!-- Screen 2: will you be my girlfriend -->
+  <div class="screen" id="screen2">
+    <div class="eyebrow">okay, here it is</div>
+    <h2 class="display lg">Will you be my girlfriend?</h2>
+    <p class="sub">Take your time. Both options lead somewhere, but only one leads somewhere good. 😊</p>
+    <div class="btn-row" id="btnRow">
+      <button class="btn btn-yes" id="yesBtn">Yes 💗</button>
+      <button class="btn btn-no" id="noBtn">No
+        <span class="no-caption" id="no-caption"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Screen 3: celebration -->
+  <div class="screen" id="screen3">
+    <div class="big-heart">🎉💗</div>
+    <h2 class="display xl">She said yes!</h2>
+    <p class="sub">Officially, happily, girlfriend-ly yours.</p>
+
+    <div class="happy-note">
+      <span>💌</span>
+      <p>
+        I honestly can't stop smiling right now. You have no idea how happy
+        you just made me. Thank you for saying yes — I promise to make this
+        something beautiful. ❤️
+      </p>
+    </div>
+
+    <button class="btn btn-yes" id="toDateAskBtn">Next →</button>
+  </div>
+
+  <!-- Screen 3b: will you go on a date with me -->
+  <div class="screen" id="screen3b">
+    <div class="eyebrow">one more question</div>
+    <h2 class="display lg">Will you go on a date with me?</h2>
+    <p class="sub">Just checking before I let you plan the whole thing.</p>
+    <div class="btn-row" id="btnRow2">
+      <button class="btn btn-yes" id="yesDateBtn">Yes 💗</button>
+      <button class="btn btn-no" id="noDateBtn">No
+        <span class="no-caption" id="no-caption2"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Screen 3c: transition into planning -->
+  <div class="screen" id="screen3c">
+    <div class="big-heart">🥰</div>
+    <h2 class="display lg">She said yes to that too!</h2>
+    <p class="sub">Four quick questions, and you're planning it — your way.</p>
+    <button class="btn btn-yes" id="toDateBtn">Let's plan it →</button>
+  </div>
+
+  <!-- Screen 4: pick a date -->
+  <div class="screen" id="screen4" data-question="date">
+    <div class="progress" id="progress4"></div>
+    <div class="eyebrow">question 1 of 4</div>
+    <h2 class="display lg">Pick a date</h2>
+    <p class="sub">Whatever day works best for you — your call.</p>
+    <input class="answer-field" id="dateInput" type="text" placeholder="e.g. Saturday, September 5th" autocomplete="off">
+    <button class="btn btn-yes next-btn" id="next4">Next →</button>
+  </div>
+
+  <!-- Screen 5: pick a time -->
+  <div class="screen" id="screen5" data-question="time">
+    <div class="progress" id="progress5"></div>
+    <div class="eyebrow">question 2 of 4</div>
+    <h2 class="display lg">Pick a time</h2>
+    <p class="sub">Morning, afternoon, evening — you decide.</p>
+    <input class="answer-field" id="timeInput" type="text" placeholder="e.g. 6:30 PM" autocomplete="off">
+    <button class="btn btn-yes next-btn" id="next5">Next →</button>
+  </div>
+
+  <!-- Screen 6: pick a venue -->
+  <div class="screen" id="screen6" data-question="venue">
+    <div class="progress" id="progress6"></div>
+    <div class="eyebrow">question 3 of 4</div>
+    <h2 class="display lg">Pick a venue</h2>
+    <p class="sub">Wherever you'd actually enjoy being.</p>
+    <input class="answer-field" id="venueInput" type="text" placeholder="e.g. that café we keep talking about" autocomplete="off">
+    <button class="btn btn-yes next-btn" id="next6">Next →</button>
+  </div>
+
+  <!-- Screen 6b: dress code -->
+  <div class="screen" id="screen6b" data-question="dress">
+    <div class="progress" id="progress6b"></div>
+    <div class="eyebrow">question 4 of 4</div>
+    <h2 class="display lg">Pick a dress code</h2>
+    <p class="sub">Set the vibe — I'll match it.</p>
+    <input class="answer-field" id="dressInput" type="text" placeholder="e.g. smart casual" autocomplete="off">
+    <button class="btn btn-yes next-btn" id="next6b">See the plan →</button>
+  </div>
+
+  <!-- Screen 7: summary -->
+  <div class="screen" id="screen7">
+    <div class="eyebrow">it's official</div>
+    <h2 class="display lg">You planned it. Let's go.</h2>
+    <p class="sub">Here's the date, exactly as you picked it.</p>
+    <div class="detail-card" id="summaryCard"></div>
+    <button class="btn btn-yes" id="confirmBtn" style="margin-top:24px;">I'll be there 💕</button>
+  </div>
+
+  <!-- Screen 8: final -->
+  <div class="screen" id="screen8">
+    <div class="big-heart">💗📅</div>
+    <h2 class="display lg">Perfect. It's a date.</h2>
+    <p class="sub">Mark the calendar, pick the outfit, count the days.</p>
+
+    <div class="final-note" id="finalNote"></div>
+
+    <p class="signature">— see you there, darling</p>
+  </div>
+
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+  // ---- floating hearts background ----
+  const field = document.getElementById('heartField');
+  const heartChars = ['💗','💕','💖','♥','💓'];
+  for(let i=0;i<16;i++){
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+    h.style.left = Math.random()*100 + '%';
+    h.style.setProperty('--drift', (Math.random()*60-30) + 'px');
+    h.style.fontSize = (16 + Math.random()*18) + 'px';
+    const dur = 9 + Math.random()*10;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay = (-Math.random()*dur) + 's';
+    field.appendChild(h);
+  }
+
+  // ---- screen navigation ----
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  const music = document.getElementById('bgMusic');
+  const musicBtn = document.getElementById('musicBtn');
+
+  function startMusic(){
+    music.play().then(() => {
+      musicBtn.innerHTML = "🔊 Playing <i>Malaika</i>";
+    }).catch(() => {
+      musicBtn.innerHTML = "🎵 Play <i>Malaika</i>";
+    });
+  }
+
+  music.addEventListener('error', () => {
+    musicBtn.innerHTML = "⚠️ Add malaika.mp3";
+    musicBtn.title = "Make sure malaika.mp3 is in the same folder as this HTML file.";
+  });
+
+  musicBtn.addEventListener('click', () => {
+    if (music.paused) {
+      startMusic();
+    } else {
+      music.pause();
+      musicBtn.innerHTML = "🎵 Play <i>Malaika</i>";
+    }
+  });
+
+  document.getElementById('openEnvelope').addEventListener('click', () => {
+    showScreen('story1');
+    startMusic();
+  });
+
+  document.getElementById('toQuestion').addEventListener('click', () => {
+    showScreen('screen2');
+  });
+
+  // ---- dodging No button(s) ----
+  const captions = [
+    "wait, really?",
+    "are you sure??",
+    "let's think about this",
+    "c'mon now",
+    "you missed me!",
+    "so close (to yes)",
+    "getting suspicious of your aim",
+    "one more try?",
+    "okay this is just exercise now"
+  ];
+
+  function setupDodge(noBtnId, btnRowId, captionId){
+    const noBtn = document.getElementById(noBtnId);
+    const btnRow = document.getElementById(btnRowId);
+    const caption = document.getElementById(captionId);
+    let dodgeCount = 0;
+
+    function dodge(){
+      dodgeCount++;
+      const rowRect = btnRow.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const maxX = Math.max(rowRect.width - btnRect.width - 8, 0);
+      const maxY = Math.max(rowRect.height - btnRect.height - 8, 0);
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+
+      const scale = Math.max(1 - dodgeCount * 0.06, 0.62);
+      noBtn.style.transform = `scale(${scale})`;
+
+      caption.textContent = captions[Math.min(dodgeCount-1, captions.length-1)];
+    }
+
+    noBtn.addEventListener('mouseenter', dodge);
+    noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, { passive:false });
+    noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+  }
+
+  setupDodge('noBtn', 'btnRow', 'no-caption');
+  setupDodge('noDateBtn', 'btnRow2', 'no-caption2');
+
+  document.getElementById('yesBtn').addEventListener('click', () => {
+    showScreen('screen3');
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 700);
+  });
+
+  document.getElementById('toDateAskBtn').addEventListener('click', () => showScreen('screen3b'));
+
+  document.getElementById('yesDateBtn').addEventListener('click', () => {
+    showScreen('screen3c');
+    launchConfetti();
+  });
+
+  document.getElementById('toDateBtn').addEventListener('click', () => showScreen('screen4'));
+
+  // ---- progress dots (4 questions now) ----
+  function buildProgress(containerId, activeIndex){
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    for(let i=0;i<4;i++){
+      const d = document.createElement('div');
+      d.className = 'dot' + (i < activeIndex ? ' done' : i === activeIndex ? ' now' : '');
+      el.appendChild(d);
+    }
+  }
+  buildProgress('progress4', 0);
+  buildProgress('progress5', 1);
+  buildProgress('progress6', 2);
+  buildProgress('progress6b', 3);
+
+  // ---- free-text answers ----
+  const picks = { date: '', time: '', venue: '', dress: '' };
+
+  function wireInput(inputId, nextBtnId, key){
+    const input = document.getElementById(inputId);
+    const nextBtn = document.getElementById(nextBtnId);
+    input.addEventListener('input', () => {
+      picks[key] = input.value.trim();
+      if(picks[key].length > 0){
+        nextBtn.classList.add('show');
+      } else {
+        nextBtn.classList.remove('show');
+      }
+    });
+  }
+
+  wireInput('dateInput', 'next4', 'date');
+  wireInput('timeInput', 'next5', 'time');
+  wireInput('venueInput', 'next6', 'venue');
+  wireInput('dressInput', 'next6b', 'dress');
+
+  document.getElementById('next4').addEventListener('click', () => showScreen('screen5'));
+  document.getElementById('next5').addEventListener('click', () => showScreen('screen6'));
+  document.getElementById('next6').addEventListener('click', () => showScreen('screen6b'));
+  document.getElementById('next6b').addEventListener('click', () => {
+    renderSummary();
+    showScreen('screen7');
+  });
+
+  function renderSummary(){
+    const card = document.getElementById('summaryCard');
+    card.innerHTML = `
+      <div class="detail-row">
+        <div class="detail-icon">📅</div>
+        <div class="detail-text">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">${picks.date}</span>
+        </div>
+      </div>
+      <hr class="detail-divider">
+      <div class="detail-row">
+        <div class="detail-icon">⏰</div>
+        <div class="detail-text">
+          <span class="detail-label">Time</span>
+          <span class="detail-value">${picks.time}</span>
+        </div>
+      </div>
+      <hr class="detail-divider">
+      <div class="detail-row">
+        <div class="detail-icon">📍</div>
+        <div class="detail-text">
+          <span class="detail-label">Venue</span>
+          <span class="detail-value">${picks.venue}</span>
+        </div>
+      </div>
+      <hr class="detail-divider">
+      <div class="detail-row">
+        <div class="detail-icon">👗</div>
+        <div class="detail-text">
+          <span class="detail-label">Dress code</span>
+          <span class="detail-value">${picks.dress}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('confirmBtn').addEventListener('click', () => {
+    const finalNote = document.getElementById('finalNote');
+    finalNote.innerHTML = `
+      <div class="note-title">A little note from me 💌</div>
+      <p>
+        So this is the plan you chose — <b>${picks.date}</b>, at <b>${picks.time}</b>,
+        at <b>${picks.venue}</b>, with a <b>${picks.dress}</b> vibe.
+        And honestly, knowing that you picked the details yourself makes me
+        even more excited. ❤️ I can't wait to spend that time with you,
+        make some beautiful memories, and finally call this our date.
+      </p>
+    `;
+    showScreen('screen8');
+    launchConfetti();
+  });
+
+  function launchConfetti(){
+    const holder = document.getElementById('confetti');
+    const bits = ['💗','🎉','💕','✨','🎊','💖'];
+    for(let i=0;i<40;i++){
+      const s = document.createElement('span');
+      s.textContent = bits[Math.floor(Math.random()*bits.length)];
+      s.style.left = Math.random()*100 + '%';
+      s.style.fontSize = (14 + Math.random()*14) + 'px';
+      const dur = 3 + Math.random()*3;
+      s.style.animationDuration = dur + 's';
+      s.style.animationDelay = (Math.random()*1.2) + 's';
+      holder.appendChild(s);
+      setTimeout(() => s.remove(), (dur+1.5)*1000);
+    }
+  }
+</script>
+
+</body>
+</html>
