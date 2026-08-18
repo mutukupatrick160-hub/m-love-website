@@ -328,6 +328,8 @@
     .display.lg{ font-size: 26px; }
   }
 
+  .btn:disabled{opacity:.7;cursor:wait;transform:none}
+
   .final-note{
     width:100%;
     background:white;
@@ -445,7 +447,7 @@
   <!-- Screen 1: envelope -->
   <div class="screen active" id="screen1">
     <div class="eyebrow">a small delivery for</div>
-    <h1 class="display xl">my love</h1>
+    <h1 class="display xl">M</h1>
     <div class="envelope" id="openEnvelope">💌</div>
     <p class="sub">You've got one letter waiting. It's short, it's honest, and it has exactly one question in it.</p>
     <p class="tap-hint">tap the envelope to open it</p>
@@ -787,20 +789,48 @@
     `;
   }
 
-  document.getElementById('confirmBtn').addEventListener('click', () => {
+  document.getElementById('confirmBtn').addEventListener('click', async () => {
     const finalNote = document.getElementById('finalNote');
-    finalNote.innerHTML = `
-      <div class="note-title">A little note from me 💌</div>
-      <p>
-        So this is the plan you chose — <b>${picks.date}</b>, at <b>${picks.time}</b>,
-        at <b>${picks.venue}</b>, with a <b>${picks.dress}</b> vibe.
-        And honestly, knowing that you picked the details yourself makes me
-        even more excited. ❤️ I can't wait to spend that time with you,
-        make some beautiful memories, and finally call this our date.
-      </p>
-    `;
-    showScreen('screen8');
-    launchConfetti();
+    const confirmBtn = document.getElementById('confirmBtn');
+
+    const formData = new FormData();
+    formData.append('date', picks.date);
+    formData.append('time', picks.time);
+    formData.append('venue', picks.venue);
+    formData.append('dress_code', picks.dress);
+    formData.append('subject', '💌 M has planned your date!');
+
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = 'Sending our plan... 💌';
+
+    try {
+      const response = await fetch('https://formspree.io/f/mbgrpdop', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) throw new Error('Form submission failed');
+
+      finalNote.innerHTML = `
+        <div class="note-title">A little note from me 💌</div>
+        <p>
+          So this is the plan you chose — <b>${picks.date}</b>, at <b>${picks.time}</b>,
+          at <b>${picks.venue}</b>, with a <b>${picks.dress}</b> vibe.
+          And honestly, knowing that you picked the details yourself makes me
+          even more excited. ❤️ I can't wait to spend that time with you,
+          make some beautiful memories, and finally call this our date.
+        </p>
+      `;
+
+      showScreen('screen8');
+      launchConfetti();
+    } catch (error) {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = originalText;
+      alert("I couldn't send the date plan right now. Please check your internet connection and try again.");
+    }
   });
 
   function launchConfetti(){
